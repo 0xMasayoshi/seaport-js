@@ -62,13 +62,13 @@ describeWithFixture(
               {
                 itemType: ItemType.ERC1155,
                 token: testErc1155.address,
-                amount: "10",
+                amount: "3",
                 identifier: nftId,
               },
             ],
             consideration: [
               {
-                amount: parseEther("10").toString(),
+                amount: parseEther("3").toString(),
                 recipient: offerer.address,
               },
             ],
@@ -101,7 +101,7 @@ describeWithFixture(
 
           const { actions } = await seaport.fulfillOrder({
             order,
-            unitsToFill: 2,
+            unitsToFill: 1,
             accountAddress: fulfiller.address,
             domain: OPENSEA_DOMAIN,
           });
@@ -114,6 +114,13 @@ describeWithFixture(
             type: "exchange",
             transactionMethods: action.transactionMethods,
           });
+
+          /* # this should not pass # */
+          const builtTransaction =
+            await action.transactionMethods.buildTransaction();
+          const ethValue = builtTransaction.value; // 999900000000000000
+          const expectedETHValue = BigNumber.from(parseEther("3")).div(3); // 1000000000000000000
+          expect(ethValue).to.not.eq(expectedETHValue);
 
           const transaction = await action.transactionMethods.transact();
 
@@ -131,8 +138,8 @@ describeWithFixture(
             nftId
           );
 
-          expect(offererErc1155Balance).eq(BigNumber.from(8));
-          expect(fulfillerErc1155Balance).eq(BigNumber.from(2));
+          expect(offererErc1155Balance).eq(BigNumber.from(2));
+          expect(fulfillerErc1155Balance).eq(BigNumber.from(1));
 
           await verifyBalancesAfterFulfill({
             ownerToTokenToIdentifierBalances,
@@ -186,7 +193,7 @@ describeWithFixture(
 
           const { actions } = await seaport.fulfillOrder({
             order,
-            unitsToFill: 2,
+            unitsToFill: 1,
             accountAddress: fulfiller.address,
             domain: OPENSEA_DOMAIN,
           });
@@ -236,8 +243,8 @@ describeWithFixture(
             nftId
           );
 
-          expect(offererErc1155Balance).eq(BigNumber.from(8));
-          expect(fulfillerErc1155Balance).eq(BigNumber.from(2));
+          expect(offererErc1155Balance).eq(BigNumber.from(2));
+          expect(fulfillerErc1155Balance).eq(BigNumber.from(1));
 
           await verifyBalancesAfterFulfill({
             ownerToTokenToIdentifierBalances,
